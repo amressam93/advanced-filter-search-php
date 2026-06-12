@@ -22,6 +22,8 @@ GREY = RGBColor(92, 104, 116)
 LIGHT = RGBColor(246, 249, 252)
 WHITE = RGBColor(255, 255, 255)
 ORANGE = RGBColor(242, 166, 48)
+PALE_BLUE = RGBColor(232, 244, 251)
+BORDER = RGBColor(221, 231, 240)
 
 
 def emu(value):
@@ -76,6 +78,31 @@ def add_bullets(slide, items, x, y, w, h, size=18, color=DARK):
     return box
 
 
+def add_brand(slide, x, y, color=NAVY, compact=False):
+    icon_size = Inches(0.42 if compact else 0.56)
+    add_picture_fit(slide, ASSETS / "adib_logo_transparent.png", x, y, icon_size, icon_size)
+    add_text(
+        slide,
+        "ADIB",
+        x + icon_size + Inches(0.08),
+        y + Inches(0.06 if compact else 0.08),
+        Inches(1.2),
+        Inches(0.28),
+        16 if compact else 22,
+        color,
+        True,
+    )
+
+
+def add_footer(slide, page):
+    line = slide.shapes.add_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, Inches(0.72), Inches(6.88), Inches(11.9), Inches(0.01))
+    line.fill.solid()
+    line.fill.fore_color.rgb = BORDER
+    line.line.color.rgb = BORDER
+    add_text(slide, "ADIB Cards Portfolio", Inches(0.72), Inches(7.03), Inches(2.8), Inches(0.18), 9, GREY)
+    add_text(slide, f"{page:02}", Inches(11.95), Inches(7.03), Inches(0.65), Inches(0.18), 9, GREY, False, PP_ALIGN.RIGHT)
+
+
 def add_picture_fit(slide, image_path, x, y, w, h):
     with Image.open(image_path) as image:
         iw, ih = image.size
@@ -101,15 +128,15 @@ def create_card_stack():
     out = ASSETS / "adib_card_stack.png"
     canvas = Image.new("RGBA", (1500, 900), (255, 255, 255, 0))
     shadow = Image.new("RGBA", (1050, 650), (0, 0, 0, 0))
-    shadow_draw = Image.new("RGBA", (960, 560), (0, 0, 0, 70))
-    shadow.paste(shadow_draw, (45, 45))
-    shadow = shadow.filter(ImageFilter.GaussianBlur(32))
-    canvas.alpha_composite(shadow, (260, 210))
+    shadow_draw = Image.new("RGBA", (900, 500), (0, 0, 0, 54))
+    shadow.paste(shadow_draw, (75, 85))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(36))
+    canvas.alpha_composite(shadow, (260, 230))
 
     cards = [
-        ("classic_card.png", -14, (155, 270), 0.72),
-        ("titanium_card.png", 0, (335, 210), 0.74),
-        ("platinum_card.png", 12, (520, 305), 0.76),
+        ("classic_card.png", -10, (190, 310), 0.68),
+        ("titanium_card.png", 0, (370, 220), 0.72),
+        ("platinum_card.png", 8, (560, 330), 0.72),
     ]
     for name, angle, pos, scale in cards:
         with Image.open(ASSETS / name).convert("RGBA") as card:
@@ -122,82 +149,80 @@ def create_card_stack():
 
 
 def add_slide_header(slide, title, section=None):
-    add_text(slide, title, Inches(0.72), Inches(0.42), Inches(9.3), Inches(0.45), 25, NAVY, True)
+    add_brand(slide, Inches(0.72), Inches(0.35), compact=True)
+    add_text(slide, title, Inches(0.72), Inches(0.92), Inches(9.3), Inches(0.45), 25, NAVY, True)
     if section:
-        add_small_label(slide, section, Inches(10.95), Inches(0.42), Inches(1.7))
-    line = slide.shapes.add_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, Inches(0.72), Inches(1.02), Inches(11.9), Inches(0.02))
+        add_small_label(slide, section, Inches(10.95), Inches(0.55), Inches(1.7))
+    line = slide.shapes.add_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, Inches(0.72), Inches(1.47), Inches(11.9), Inches(0.02))
     line.fill.solid()
-    line.fill.fore_color.rgb = RGBColor(219, 229, 239)
-    line.line.color.rgb = RGBColor(219, 229, 239)
+    line.fill.fore_color.rgb = BORDER
+    line.line.color.rgb = BORDER
 
 
 def cover_slide(prs, card_stack):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     slide.background.fill.solid()
-    slide.background.fill.fore_color.rgb = LIGHT
+    slide.background.fill.fore_color.rgb = WHITE
 
-    add_rect(slide, Inches(0.0), Inches(0.0), Inches(5.1), SLIDE_H, WHITE, radius=False)
-    add_rect(slide, Inches(0.0), Inches(0.0), Inches(0.16), SLIDE_H, BLUE, radius=False)
-    add_rect(slide, Inches(6.0), Inches(0.7), Inches(6.7), Inches(6.05), RGBColor(232, 242, 250), radius=True)
+    add_rect(slide, Inches(0), Inches(0), Inches(0.18), SLIDE_H, BLUE, radius=False)
+    add_rect(slide, Inches(6.2), Inches(0.6), Inches(6.45), Inches(6.25), PALE_BLUE, line=PALE_BLUE, radius=True)
 
-    add_picture_fit(slide, ASSETS / "adib_logo_transparent.png", Inches(0.9), Inches(0.78), Inches(1.15), Inches(1.15))
-    add_text(slide, "ADIB", Inches(2.16), Inches(0.82), Inches(2.1), Inches(0.58), 38, NAVY, True)
-    add_text(slide, "Abu Dhabi Islamic Bank", Inches(2.18), Inches(1.36), Inches(2.45), Inches(0.3), 13, GREY)
+    add_brand(slide, Inches(0.85), Inches(0.78))
+    add_text(slide, "Abu Dhabi Islamic Bank", Inches(0.86), Inches(1.55), Inches(3.2), Inches(0.28), 13, GREY)
 
-    add_text(slide, "Cards Portfolio", Inches(0.9), Inches(2.2), Inches(3.8), Inches(0.62), 35, DARK, True)
-    add_text(slide, "Simple visual overview", Inches(0.94), Inches(2.9), Inches(3.2), Inches(0.35), 18, BLUE, True)
-    add_bullets(
+    add_text(slide, "Cards Portfolio", Inches(0.85), Inches(2.35), Inches(4.45), Inches(0.72), 42, DARK, True)
+    add_text(slide, "Simple visual overview", Inches(0.88), Inches(3.15), Inches(3.5), Inches(0.35), 18, BLUE, True)
+    add_text(
         slide,
-        ["Cash Back", "Titanium", "Platinum"],
-        Inches(0.95),
-        Inches(3.65),
-        Inches(3.0),
-        Inches(1.3),
-        18,
+        "A clean introduction to ADIB card products, designed for quick reading and strong visual impact.",
+        Inches(0.9),
+        Inches(3.92),
+        Inches(4.45),
+        Inches(0.85),
+        16,
         GREY,
     )
-    add_text(slide, "Clear design. Readable slides. Product-focused visuals.", Inches(0.95), Inches(6.35), Inches(3.75), Inches(0.45), 12, GREY)
+    add_rect(slide, Inches(0.9), Inches(5.42), Inches(3.65), Inches(0.68), LIGHT, line=BORDER, radius=True)
+    add_text(slide, "Cash Back  |  Titanium  |  Platinum", Inches(1.12), Inches(5.63), Inches(3.2), Inches(0.2), 11, NAVY, True, PP_ALIGN.CENTER)
 
-    add_picture_fit(slide, card_stack, Inches(6.12), Inches(1.02), Inches(6.2), Inches(5.15))
-    add_text(slide, "ADIB card products", Inches(7.15), Inches(6.23), Inches(4.4), Inches(0.4), 18, NAVY, True, PP_ALIGN.CENTER)
+    add_picture_fit(slide, card_stack, Inches(6.32), Inches(1.1), Inches(6.0), Inches(5.05))
+    add_text(slide, "ADIB card products", Inches(7.55), Inches(6.12), Inches(3.6), Inches(0.32), 15, NAVY, True, PP_ALIGN.CENTER)
 
 
 def overview_slide(prs):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     slide.background.fill.solid()
     slide.background.fill.fore_color.rgb = WHITE
-    add_slide_header(slide, "Cash Back Cards Overview", "Overview")
-
-    add_picture_fit(slide, ASSETS / "cashback_banner.jpg", Inches(0.72), Inches(1.32), Inches(11.9), Inches(3.62))
-    add_rect(slide, Inches(0.72), Inches(5.25), Inches(3.62), Inches(1.25), LIGHT, radius=True)
-    add_rect(slide, Inches(4.86), Inches(5.25), Inches(3.62), Inches(1.25), LIGHT, radius=True)
-    add_rect(slide, Inches(9.0), Inches(5.25), Inches(3.62), Inches(1.25), LIGHT, radius=True)
+    add_slide_header(slide, "Portfolio at a Glance", "Overview")
 
     tiles = [
-        ("Cashback", "Rewards on card purchases"),
-        ("Contactless", "Quick everyday payments"),
-        ("Mastercard", "Wide local and international acceptance"),
+        ("Cash Back", "classic_card.png", BLUE, "Everyday rewards"),
+        ("Titanium", "titanium_card.png", DARK, "Modern daily banking"),
+        ("Platinum", "platinum_card.png", ORANGE, "Premium positioning"),
     ]
-    for idx, (head, body) in enumerate(tiles):
-        x = Inches(0.98 + idx * 4.14)
-        add_text(slide, head, x, Inches(5.46), Inches(3.0), Inches(0.28), 17, NAVY, True)
-        add_text(slide, body, x, Inches(5.88), Inches(2.8), Inches(0.3), 12, GREY)
+    for idx, (head, img, color, body) in enumerate(tiles):
+        x = Inches(0.85 + idx * 4.08)
+        add_rect(slide, x, Inches(1.95), Inches(3.45), Inches(4.35), LIGHT, line=BORDER, radius=True)
+        add_text(slide, head, x + Inches(0.25), Inches(2.22), Inches(2.95), Inches(0.35), 22, color, True, PP_ALIGN.CENTER)
+        add_picture_fit(slide, ASSETS / img, x + Inches(0.2), Inches(2.85), Inches(3.05), Inches(2.02))
+        add_text(slide, body, x + Inches(0.34), Inches(5.28), Inches(2.72), Inches(0.26), 13, GREY, False, PP_ALIGN.CENTER)
+    add_footer(slide, 2)
 
 
 def product_slide(prs, title, image_name, accent, bullets, label):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     slide.background.fill.solid()
-    slide.background.fill.fore_color.rgb = LIGHT
+    slide.background.fill.fore_color.rgb = WHITE
     add_slide_header(slide, title, label)
 
-    add_rect(slide, Inches(0.72), Inches(1.42), Inches(6.05), Inches(4.78), WHITE, radius=True)
-    add_picture_fit(slide, ASSETS / image_name, Inches(1.0), Inches(1.68), Inches(5.5), Inches(4.25))
+    add_rect(slide, Inches(0.78), Inches(2.05), Inches(4.25), Inches(3.72), LIGHT, line=BORDER, radius=True)
+    add_rect(slide, Inches(0.78), Inches(2.05), Inches(0.11), Inches(3.72), accent, radius=False)
+    add_text(slide, "Key messages", Inches(1.15), Inches(2.46), Inches(3.2), Inches(0.35), 22, NAVY, True)
+    add_bullets(slide, bullets, Inches(1.18), Inches(3.18), Inches(3.35), Inches(1.85), 17, DARK)
 
-    add_rect(slide, Inches(7.35), Inches(1.55), Inches(4.98), Inches(4.52), WHITE, radius=True)
-    add_rect(slide, Inches(7.35), Inches(1.55), Inches(0.12), Inches(4.52), accent, radius=False)
-    add_text(slide, "Key messages", Inches(7.74), Inches(1.93), Inches(3.8), Inches(0.42), 23, NAVY, True)
-    add_bullets(slide, bullets, Inches(7.77), Inches(2.72), Inches(3.92), Inches(2.5), 17, DARK)
-    add_text(slide, "Visual focus: large card image + short text only.", Inches(7.77), Inches(5.48), Inches(3.85), Inches(0.25), 11, GREY)
+    add_rect(slide, Inches(5.58), Inches(1.92), Inches(6.82), Inches(4.05), PALE_BLUE, line=PALE_BLUE, radius=True)
+    add_picture_fit(slide, ASSETS / image_name, Inches(6.0), Inches(2.22), Inches(5.95), Inches(3.45))
+    add_footer(slide, 3 if label == "Platinum" else 4)
 
 
 def comparison_slide(prs):
@@ -207,18 +232,44 @@ def comparison_slide(prs):
     add_slide_header(slide, "Simple Product Comparison", "Compare")
 
     cols = [
-        ("Cash Back", "classic_card.png", BLUE, "Everyday payments"),
-        ("Titanium", "titanium_card.png", DARK, "Higher-tier daily card"),
-        ("Platinum", "platinum_card.png", ORANGE, "Premium positioning"),
+        ("Cash Back", "Classic blue", "Everyday rewards", BLUE),
+        ("Titanium", "Dark titanium", "Daily premium feel", DARK),
+        ("Platinum", "Silver premium", "Premium positioning", ORANGE),
     ]
-    for idx, (name, img, color, note) in enumerate(cols):
-        x = Inches(0.78 + idx * 4.18)
-        add_rect(slide, x, Inches(1.45), Inches(3.62), Inches(4.95), LIGHT, radius=True)
-        add_text(slide, name, x + Inches(0.28), Inches(1.72), Inches(3.0), Inches(0.34), 21, color, True, PP_ALIGN.CENTER)
-        add_picture_fit(slide, ASSETS / img, x + Inches(0.18), Inches(2.25), Inches(3.25), Inches(2.18))
-        add_rect(slide, x + Inches(0.54), Inches(4.77), Inches(2.55), Inches(0.55), color, radius=True)
-        add_text(slide, note, x + Inches(0.64), Inches(4.94), Inches(2.35), Inches(0.2), 10, WHITE, True, PP_ALIGN.CENTER)
-        add_text(slide, "Clear image, simple label, one message.", x + Inches(0.38), Inches(5.62), Inches(2.86), Inches(0.35), 11, GREY, False, PP_ALIGN.CENTER)
+    x0 = Inches(0.85)
+    y0 = Inches(2.05)
+    widths = [Inches(2.5), Inches(3.0), Inches(3.15), Inches(2.7)]
+    headers = ["Product", "Visual tone", "Positioning", "Design focus"]
+    x = x0
+    for i, header in enumerate(headers):
+        add_rect(slide, x, y0, widths[i], Inches(0.65), NAVY, radius=False)
+        add_text(slide, header, x + Inches(0.16), y0 + Inches(0.2), widths[i] - Inches(0.32), Inches(0.18), 10, WHITE, True)
+        x += widths[i]
+
+    for row, (product, tone, position, color) in enumerate(cols):
+        y = y0 + Inches(0.65 + row * 0.9)
+        x = x0
+        values = [product, tone, position, "Simple card-first layout"]
+        for col, value in enumerate(values):
+            fill = LIGHT if row % 2 == 0 else WHITE
+            add_rect(slide, x, y, widths[col], Inches(0.9), fill, line=BORDER, radius=False)
+            text_color = color if col == 0 else DARK
+            add_text(slide, value, x + Inches(0.16), y + Inches(0.32), widths[col] - Inches(0.32), Inches(0.2), 11, text_color, col == 0)
+            x += widths[col]
+
+    add_text(
+        slide,
+        "Recommendation: keep each slide focused on one product, one image, and three short messages.",
+        Inches(1.15),
+        Inches(5.78),
+        Inches(10.95),
+        Inches(0.35),
+        14,
+        GREY,
+        False,
+        PP_ALIGN.CENTER,
+    )
+    add_footer(slide, 5)
 
 
 def closing_slide(prs):
@@ -226,11 +277,11 @@ def closing_slide(prs):
     slide.background.fill.solid()
     slide.background.fill.fore_color.rgb = NAVY
 
-    add_picture_fit(slide, ASSETS / "adib_logo_transparent.png", Inches(5.67), Inches(1.12), Inches(1.45), Inches(1.45))
-    add_text(slide, "ADIB", Inches(4.8), Inches(2.7), Inches(3.2), Inches(0.55), 40, WHITE, True, PP_ALIGN.CENTER)
-    add_text(slide, "Cards Portfolio", Inches(4.55), Inches(3.34), Inches(3.7), Inches(0.38), 19, RGBColor(194, 230, 247), True, PP_ALIGN.CENTER)
-    add_text(slide, "Simple. Secure. Rewarding.", Inches(3.95), Inches(4.36), Inches(4.9), Inches(0.5), 25, WHITE, True, PP_ALIGN.CENTER)
-    add_text(slide, "Thank you", Inches(5.35), Inches(5.22), Inches(2.2), Inches(0.32), 16, RGBColor(194, 230, 247), False, PP_ALIGN.CENTER)
+    add_rect(slide, Inches(3.45), Inches(1.08), Inches(6.45), Inches(5.36), RGBColor(0, 77, 149), line=RGBColor(0, 77, 149), radius=True)
+    add_picture_fit(slide, ASSETS / "adib_logo_transparent.png", Inches(5.86), Inches(1.68), Inches(1.12), Inches(1.12))
+    add_text(slide, "ADIB", Inches(4.85), Inches(3.02), Inches(3.65), Inches(0.5), 36, WHITE, True, PP_ALIGN.CENTER)
+    add_text(slide, "Cards Portfolio", Inches(4.75), Inches(3.66), Inches(3.82), Inches(0.32), 17, RGBColor(196, 230, 247), True, PP_ALIGN.CENTER)
+    add_text(slide, "Simple. Professional. Visual.", Inches(3.95), Inches(4.55), Inches(5.45), Inches(0.42), 24, WHITE, True, PP_ALIGN.CENTER)
 
 
 def build_deck():
